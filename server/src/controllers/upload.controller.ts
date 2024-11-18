@@ -5,10 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Configure S3
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: process.env.AWS_REGION as string,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
   },
 });
 
@@ -50,7 +50,7 @@ export const uploadImages = async (req: Request, res: Response) => {
       const fileName = `${uuidv4()}.${fileExtension}`;
 
       const command = new PutObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET || 'your-bucket-name',
+        Bucket: process.env.AWS_S3_BUCKET,
         Key: `uploads/${fileName}`,
         Body: file.buffer,
         ContentType: file.mimetype,
