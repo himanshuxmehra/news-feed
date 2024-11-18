@@ -114,26 +114,27 @@ export const postSchemas = {
   }),
 };
 
-export const uploadSchemas = {
-  upload: z.object({
-    files: z
-      .array(
-        z.object({
-          mimetype: z
-            .string()
-            .regex(/^image\/(jpeg|png|gif)$/, 'Invalid file type'),
-          size: z.number().max(5 * 1024 * 1024, 'File size cannot exceed 5MB'),
-        }),
-      )
-      .max(4, 'Cannot upload more than 4 files'),
-  }),
+// --Needs improvement
+// export const uploadSchemas = {
+//   upload: z.object({
+//     files: z
+//       .array(
+//         z.object({
+//           mimetype: z
+//             .string()
+//             .regex(/^image\/(jpeg|png|gif)$/, 'Invalid file type'),
+//           size: z.number().max(5 * 1024 * 1024, 'File size cannot exceed 5MB'),
+//         }),
+//       )
+//       .max(4, 'Cannot upload more than 4 files'),
+//   }),
 
-  delete: z.object({
-    body: z.object({
-      url: z.string().url('Invalid URL'),
-    }),
-  }),
-};
+//   delete: z.object({
+//     body: z.object({
+//       url: z.string().url('Invalid URL'),
+//     }),
+//   }),
+// };
 
 export const likeSchemas = {
   checkLikeStatus: z.object({

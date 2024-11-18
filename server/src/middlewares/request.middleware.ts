@@ -6,5 +6,7 @@ export const requestLogger = (
   next: NextFunction,
 ) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Request body:', req.body);
+  console.log('Request query:', req.file);
   next();
 };

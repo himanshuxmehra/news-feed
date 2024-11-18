@@ -33,17 +33,20 @@ export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new DbError('Missing email or password', 400);
+    console.log('Invalid credentials');
+    res.status(401).json({ error: 'Invalid credentials' });
   }
 
   const user = await userRepo.findByEmail(email);
   if (!user) {
+    console.log('Invalid credentials');
     throw new DbError('Invalid credentials', 401);
   }
 
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) {
-    throw new DbError('Invalid credentials', 401);
+    console.log('Invalid credentials');
+    res.status(401).json({ error: 'Invalid credentials' });
   }
 
   const token = jwt.sign(
@@ -52,7 +55,6 @@ export const login = async (req: Request, res: Response) => {
     { expiresIn: '1h' },
   );
 
-  res.cookie('token', token, { httpOnly: true });
   return res.json({ token });
 };
 
