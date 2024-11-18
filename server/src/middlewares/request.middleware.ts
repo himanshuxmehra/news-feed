@@ -1,4 +1,4 @@
-import { NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 export const requestLogger = (
   req: Request,

@@ -1,48 +1,62 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
-import { PostgresDataSource } from '../config/postgres';
-import { User } from '../models/postgres/user.entity';
+import { DbError } from '../utils/dbErrors';
+import { userRepo } from '../repositories/userRepo';
 
 interface JwtPayload {
-  userId: string;
+ userId: string;
 }
 
+// Extend Express Request type to include user
 declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
-  }
+ namespace Express {
+   interface Request {
+     user?: {
+       id: string;
+       email: string;
+       name: string;
+     };
+   }
+ }
 }
 
-export const authenticate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
+export const authenticate: RequestHandler = async (
+ req: Request,
+ res: Response,
+ next: NextFunction
 ) => {
-  try {
-    const token =
-      req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
+ try {
+   // Get token from cookie or header
+   const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
 
-    if (!token) {
-      res.status(401).json({ error: 'Authentication required' });
-    }
+   if (!token) {
+      console.log('No token');
+      res.status(401).json({ message: 'No token, authorization denied' });
+   }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'your-secret-key',
-    ) as JwtPayload;
-    const user = await PostgresDataSource.getRepository(User).findOne({
-      where: { id: decoded.userId },
-    });
+   // Verify token
+   const decoded = jwt.verify(
+     token,
+     process.env.JWT_SECRET || 'your-secret-key'
+   ) as JwtPayload;
 
-    if (!user) {
-      res.status(401).json({ error: 'Invalid token' });
-    }
+   // Get user from database
+   const user = await userRepo.findById(decoded.userId);
+   if (!user) {
+     throw new DbError('User not found', 401);
+   }
 
-    req.user = user;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
+   // Remove password from user object
+   const { password, ...userWithoutPassword } = user;
+   
+   // Add user to request object
+   req.user = userWithoutPassword;
+   
+   next();
+ } catch (error) {
+   if (error instanceof jwt.JsonWebTokenError) {
+      throw new DbError('Invalid token', 401);
+   }
+   throw error;
+ }
 };
