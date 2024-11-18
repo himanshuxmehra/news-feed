@@ -6,7 +6,8 @@ import { DbError } from '../utils/dbErrors';
 export const createPost = async (req: Request, res: Response) => {
   const { content, mediaUrls, parentPostId } = req.body;
   if (!content) {
-    throw new DbError('Content is required', 400);
+    console.log('content is required');
+    return res.status(400).json({ error: 'Content is required' });
   }
 
   const post = await postRepo.create(
