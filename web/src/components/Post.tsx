@@ -118,7 +118,7 @@ function Post({
     };
 
     return (
-        <Link href={`/post/${post.id}`}>
+        <Link href={`/post/${post.id}`} key={post.id}>
             <div className="border-b border-[#edf2f4]/20 py-4 px-4">
                 <div className="flex items-start space-x-3">
                     <Avatar className="w-10 h-10 border-2 border-[#edf2f4]">

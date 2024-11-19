@@ -5,20 +5,40 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { BarChart3, ClockAlert, Heart } from "lucide-react";
 import ReplyBox from "@/components/ReplyBox";
 import Reply from "@/components/Reply";
 import { API_URL } from "@/lib/constants";
 import ActionBar from "@/components/ActionBar";
+import { toast } from "@/hooks/use-toast";
 
-const page = async ({ params }: { params: { id: string } }) => {
-    const { id } = await params;
+interface PostData {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+    content: string;
+    created_at: string;
+    likes_count: number;
+    views_count: number;
+}
+export default async function Page({ params }: { params: { id: string } }) {
+    const { id } = params;
     console.log(id);
-
-    const data = await fetch(`${API_URL}/api/posts/${id}`).then((res) =>
-        res.json()
-    );
-
+    let data;
+    try {
+        const res = await fetch(`${API_URL}/api/posts/${id}`);
+        if (!res.ok) {
+            throw new Error("Failed to fetch post");
+        }
+        data = await res.json();
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description:
+                error instanceof Error ? error.message : "Loading Failed",
+        });
+    }
     return (
         <div className="w-full">
             <Card className="bg-inherit">
@@ -73,6 +93,4 @@ const page = async ({ params }: { params: { id: string } }) => {
             <Reply />
         </div>
     );
-};
-
-export default page;
+}
