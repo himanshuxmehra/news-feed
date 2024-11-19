@@ -43,6 +43,7 @@ function Post({
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          method: "POST",
         });
 
         if (response.ok) {
@@ -57,29 +58,6 @@ function Post({
     if (token) {
       checkLikeStatus();
     }
-  }, [post.id, token]);
-
-  // Increment view count when post is viewed
-  useEffect(() => {
-    const incrementViews = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/posts/${post.id}/view`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setPost((prev) => ({ ...prev, views: data.views }));
-        }
-      } catch (error) {
-        console.error("Error incrementing views:", error);
-      }
-    };
-
-    incrementViews();
   }, [post.id, token]);
 
   const handleLike = async (e: React.MouseEvent) => {

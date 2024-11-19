@@ -104,7 +104,7 @@ export const postRepo = {
         WHERE p.parent_post_id IS NULL
         ORDER BY 
           CASE 
-            WHEN $1 = 'date' THEN EXTRACT(EPOCH FROM created_at)
+            WHEN $1 = 'date' THEN EXTRACT(EPOCH FROM p.created_at)
             WHEN $1 = 'likes' THEN p.likes_count
             WHEN $1 = 'replies' THEN (
               SELECT COUNT(*) FROM posts p2 
