@@ -4,19 +4,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Post from "./Post";
 import { ScrollArea } from "./ui/scroll-area";
 import { API_URL } from "@/lib/constants";
+import Loader from "./ui/loader";
 
 function Feed() {
   const [latestPosts, setLatestPosts] = useState([]);
   const [trendingPosts, setTrendingPosts] = useState([]);
   const [hotPosts, setHotPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("latest");
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const fetchPosts = async (sort: string, order: string) => {
+      setIsLoading(true);
+
       const response = await fetch(
         `${API_URL}/api/posts?sort=${sort}&order=${order}`
       );
       const data = await response.json();
+      setIsLoading(false);
+
       return data;
     };
 
@@ -60,25 +65,37 @@ function Feed() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="latest">
-          <ScrollArea className="h-[95vh] rounded-md p-4">
-            {latestPosts.map((post) => (
-              <Post key={post.id} post={post} />
-            ))}
-          </ScrollArea>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <ScrollArea className="h-[95vh] rounded-md p-4">
+              {latestPosts.map((post) => (
+                <Post key={post.id} post={post} />
+              ))}
+            </ScrollArea>
+          )}
         </TabsContent>
         <TabsContent value="trending">
-          <ScrollArea className="h-[95vh] rounded-md p-4">
-            {trendingPosts.map((post) => (
-              <Post key={post.id} post={post} />
-            ))}
-          </ScrollArea>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <ScrollArea className="h-[95vh] rounded-md p-4">
+              {trendingPosts.map((post) => (
+                <Post key={post.id} post={post} />
+              ))}
+            </ScrollArea>
+          )}
         </TabsContent>
         <TabsContent value="hot">
-          <ScrollArea className="h-[95vh] rounded-md p-4">
-            {hotPosts.map((post) => (
-              <Post key={post.id} post={post} />
-            ))}
-          </ScrollArea>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <ScrollArea className="h-[95vh] rounded-md p-4">
+              {hotPosts.map((post) => (
+                <Post key={post.id} post={post} />
+              ))}
+            </ScrollArea>
+          )}
         </TabsContent>
       </Tabs>
     </div>
