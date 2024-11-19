@@ -57,7 +57,8 @@ export const postRepo = {
 
   findById: async (id: string): Promise<Post | null> => {
     try {
-      const sql = 'SELECT * FROM posts WHERE id = $1';
+      const sql =
+        'SELECT p.id, p.content, p.author_id, p.parent_post_id, p.likes_count, p.views_count, p.media_urls, p.created_at, p.updated_at, u.name, u.name FROM posts p INNER JOIN users u ON p.author_id = u.id WHERE p.id = $1';
       const result = await pool.query<Post>(sql, [id]);
       if (!result.rows[0]) {
         throw new DbError('Post not found', 404);

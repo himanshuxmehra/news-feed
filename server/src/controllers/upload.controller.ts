@@ -12,6 +12,10 @@ const s3Client = new S3Client({
   },
 });
 
+const s3Url = (filename: string) => {
+  return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${filename}`;
+};
+
 // Configure multer
 const upload = multer({
   limits: {
@@ -59,7 +63,7 @@ export const uploadImages = async (req: Request, res: Response) => {
 
       await s3Client.send(command);
 
-      return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${fileName}`;
+      return s3Url(fileName);
     },
   );
 
@@ -71,7 +75,7 @@ export const uploadImages = async (req: Request, res: Response) => {
   });
 };
 
-// Optional: Delete image from S3
+// Delete image from S3
 export const deleteImage = async (req: Request, res: Response) => {
   const { url } = req.body;
   if (!url) {
@@ -83,7 +87,7 @@ export const deleteImage = async (req: Request, res: Response) => {
   const key = url.split('.com/')[1];
 
   const command = {
-    Bucket: process.env.AWS_S3_BUCKET || 'your-bucket-name',
+    Bucket: process.env.AWS_S3_BUCKET,
     Key: key,
   };
 

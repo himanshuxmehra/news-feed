@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { userRepo } from '../repositories/userRepo';
 import { DbError } from '../utils/dbErrors';
+import { JWT_SECRET } from '../utils/constants';
 
 export const register = async (req: Request, res: Response) => {
   const { email, password, name } = req.body;
@@ -16,11 +17,7 @@ export const register = async (req: Request, res: Response) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await userRepo.create(email, hashedPassword, name);
 
-  const token = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET as string,
-    { expiresIn: '1h' },
-  );
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
 
   res.cookie('token', token, { httpOnly: true });
   return res.status(201).json({
@@ -48,7 +45,7 @@ export const login = async (req: Request, res: Response) => {
     console.log('Invalid credentials');
     res.status(401).json({ error: 'Invalid credentials' });
   }
-
+  // todo: implement refresh token
   const token = jwt.sign(
     { userId: user.id },
     process.env.JWT_SECRET as string,
