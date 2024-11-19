@@ -2,10 +2,20 @@
 
 A feed for posts
 
-# Todo
+# Setup
 
-[ ] db optimization
-[ ] aws s3 integration
-[ ] writing tests
-[ ] check username in user record
-[ ] add redis
+to run the project locally, run the following commands for running the server:
+
+```
+cd server
+npm install
+npm start
+```
+
+to run the web app, run the following commands:
+
+```
+cd web
+npm install
+npm run dev
+```

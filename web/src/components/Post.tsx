@@ -24,9 +24,10 @@ function Post({
     createdAt: string;
     updatedAt: string;
     userId: string;
-    likes: number;
+    name: string;
+    likes_count: number;
     replies: number;
-    views: number;
+    views_count: number;
   };
 }) {
   const [post, setPost] = useState(initialPost);
@@ -121,10 +122,10 @@ function Post({
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center space-x-1">
-              <span className="font-bold text-[#edf2f4]">{post.userId}</span>
+              <span className="font-bold text-[#edf2f4]">{post.name}</span>
 
               <span className="text-[#edf2f4]/60">
-                {post.userId} · {post.createdAt}
+                {post.authorId} · {post.createdAt}
               </span>
               <Button
                 variant="ghost"
@@ -158,7 +159,7 @@ function Post({
                 <Heart
                   className={`h-4 w-4 mr-1 ${hasLiked ? "fill-current" : ""}`}
                 />
-                {post.likes}
+                {post.likes_count}
               </Button>
               <Button
                 variant="ghost"
@@ -166,7 +167,7 @@ function Post({
                 className="text-[#edf2f4] hover:text-[#edf2f4]/80 text-sm hover:bg-[#EF233C]/10"
               >
                 <BarChart3 className="h-4 w-4 mr-1" />
-                {post.views}
+                {post.views_count}
               </Button>
               <Button
                 variant="ghost"

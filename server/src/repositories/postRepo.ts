@@ -98,15 +98,17 @@ export const postRepo = {
 
       const offset = (page - 1) * limit;
       const sql = `
-        SELECT * FROM posts 
-        WHERE parent_post_id IS NULL
+         SELECT p.id, p.content, p.author_id, p.parent_post_id, p.likes_count, p.views_count, p.media_urls, p.created_at, p.updated_at, u.name 
+          FROM posts p 
+          INNER JOIN users u ON p.author_id = u.id 
+        WHERE p.parent_post_id IS NULL
         ORDER BY 
           CASE 
             WHEN $1 = 'date' THEN EXTRACT(EPOCH FROM created_at)
-            WHEN $1 = 'likes' THEN likes_count
+            WHEN $1 = 'likes' THEN p.likes_count
             WHEN $1 = 'replies' THEN (
               SELECT COUNT(*) FROM posts p2 
-              WHERE p2.parent_post_id = posts.id
+              WHERE p2.parent_post_id = p.id
             )
           END ${order}
         LIMIT $2 OFFSET $3
