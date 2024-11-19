@@ -167,3 +167,25 @@ export const commonSchemas = {
     to: z.string().datetime(),
   }),
 };
+
+export const userSchemas = {
+  create: z.object({
+    body: z.object({
+      email: z.string().email('Invalid email address'),
+      password: z
+        .string()
+        .min(6, 'Password must be at least 6 characters long'),
+      name: z.string().min(1, 'Name is required'),
+    }),
+  }),
+  getByEmail: z.object({
+    params: z.object({
+      email: z.string().email('Invalid email address'),
+    }),
+  }),
+  getById: z.object({
+    params: z.object({
+      id: z.string().uuid('Invalid user ID'),
+    }),
+  }),
+};

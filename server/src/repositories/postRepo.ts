@@ -22,21 +22,11 @@ export const postRepo = {
     parentPostId?: string,
   ): Promise<Post> => {
     try {
-      if (parentPostId) {
-        const parentExists = await pool.query(
-          'SELECT id FROM posts WHERE id = $1',
-          [parentPostId],
-        );
-        if (parentExists.rowCount === 0) {
-          throw new DbError('Parent post not found', 404);
-        }
-      }
-
       const sql = `
-          INSERT INTO posts (content, author_id, media_urls, parent_post_id)
-          VALUES ($1, $2, $3, $4)
-          RETURNING *
-        `;
+        INSERT INTO posts (content, author_id, media_urls, parent_post_id)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `;
       const result = await pool.query<Post>(sql, [
         content,
         authorId,
@@ -57,13 +47,37 @@ export const postRepo = {
 
   findById: async (id: string): Promise<Post | null> => {
     try {
-      const sql =
-        'SELECT p.id, p.content, p.author_id, p.parent_post_id, p.likes_count, p.views_count, p.media_urls, p.created_at, p.updated_at, u.name, u.name FROM posts p INNER JOIN users u ON p.author_id = u.id WHERE p.id = $1';
-      const result = await pool.query<Post>(sql, [id]);
-      if (!result.rows[0]) {
-        throw new DbError('Post not found', 404);
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+
+        const incrementViewsSql = `
+          UPDATE posts 
+          SET views_count = views_count + 1
+          WHERE id = $1
+        `;
+        await client.query(incrementViewsSql, [id]);
+
+        const sql = `
+          SELECT p.id, p.content, p.author_id, p.parent_post_id, p.likes_count, p.views_count, p.media_urls, p.created_at, p.updated_at, u.name 
+          FROM posts p 
+          INNER JOIN users u ON p.author_id = u.id 
+          WHERE p.id = $1
+        `;
+        const result = await client.query<Post>(sql, [id]);
+
+        await client.query('COMMIT');
+
+        if (!result.rows[0]) {
+          throw new DbError('Post not found', 404);
+        }
+        return result.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
       }
-      return result.rows[0];
     } catch (error) {
       if (error instanceof DbError) throw error;
       throw error;
@@ -84,19 +98,19 @@ export const postRepo = {
 
       const offset = (page - 1) * limit;
       const sql = `
-          SELECT * FROM posts 
-          WHERE parent_post_id IS NULL
-          ORDER BY 
-            CASE 
-              WHEN $1 = 'date' THEN created_at
-              WHEN $1 = 'likes' THEN likes_count
-              WHEN $1 = 'replies' THEN (
-                SELECT COUNT(*) FROM posts p2 
-                WHERE p2.parent_post_id = posts.id
-              )
-            END ${order}
-          LIMIT $2 OFFSET $3
-        `;
+        SELECT * FROM posts 
+        WHERE parent_post_id IS NULL
+        ORDER BY 
+          CASE 
+            WHEN $1 = 'date' THEN EXTRACT(EPOCH FROM created_at)
+            WHEN $1 = 'likes' THEN likes_count
+            WHEN $1 = 'replies' THEN (
+              SELECT COUNT(*) FROM posts p2 
+              WHERE p2.parent_post_id = posts.id
+            )
+          END ${order}
+        LIMIT $2 OFFSET $3
+      `;
       const result = await pool.query<Post>(sql, [sort, limit, offset]);
       return result.rows;
     } catch (error) {
